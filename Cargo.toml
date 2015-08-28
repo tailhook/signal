@@ -1,8 +1,14 @@
 [package]
 name = "signal"
+description = """
+    The higher-level abstractions around unix signals
+"""
 version = "0.1.0"
 license = "MIT"
 authors = ["Paul Colomiets <paul@colomiets.name>"]
+homepage = "http://github.com/tailhook/signal"
+repository = "http://github.com/tailhook/signal"
+documentation = "http://tailhook.github.io/signal/"
 
 [dependencies]
 nix = "*"
