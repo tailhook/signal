@@ -5,6 +5,6 @@ license = "MIT"
 authors = ["Paul Colomiets <paul@colomiets.name>"]
 
 [dependencies]
-nix = "*"
+nix = { git = "git://github.com/carllerche/nix-rust" }
 libc = "*"
 
