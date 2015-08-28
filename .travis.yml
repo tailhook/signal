@@ -1,8 +1,10 @@
 language: rust
 rust:
 - stable
-- beta
-- nightly
+# it seems cargo on beta can't handle different version of nix in dependencies
+# and dev-dependencies will see on release
+#- beta
+#- nightly
 sudo: false
 env:
   secure: "XgtN+JshVFncTNoPJ44n8yHcLEIHv7sSKTcXYPM1DeKm2cRCUC1lxNvyiBH6CenEdushrg1vfUne8JeAvB/nE3NI9BG7Cr3ZoA+Zxbb8f4vJZH9H+FJA2nFgMATad2EqMaH+WH6sxDv3IQNCl267sdA/e+XeQ3YFbQds5xQnCfsXAQRf+zy+lVfgL2AM+6/ciXmePhqTa/WVaoBSXru/L02b6UOGiexYpzx8dUN4Hcf4fbdUv22NnE0TPD2PLG3kvcIbJn+PXxhPvYK1lQwX1DhW7P2tQkx336pWpfKZdRnvAgW0CHh9bpdjTCz2OMJhNfrddaUr84t0jeytulhXf7a32bYcgx5Vn3IzUNFtpjGQ/Xcq6Ge346+Euduo/rw/Tl52DhGVQkWJ4jJisYq2FW8MOLLTdZtbf/9JkwYCp+S9egLk1FivpHCSE+ewLRcvNwjcw/+NQQQNJ8iFQJ5gD6BpABK8KdhtMsdaxAv1IRtSJoaEUmS6AekBnWJvWpUlgtAm0JLBzeScQFFo6SFyyR4Wukuw1bT0nvuv0D/arvZzcmYK0I3FBrMtpuWJQJVmVI3GP5D4ORw3I14q/M6ocrgo5N6k3XlBqtTFNn/1Ou7HiDIqfEPOL55Bh7kbmSqFAli3aMESoa63gJG+vRgHHDKE7yZ/1U878WL0XFqigvs="
