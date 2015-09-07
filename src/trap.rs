@@ -10,13 +10,17 @@
 //! Especially useful for running (multiple) child processes simultaneously.
 
 use std::mem::uninitialized;
+use std::cmp::max;
 use std::ptr::null_mut;
 
+use time::{SteadyTime, Duration};
 use nix::sys::signal::{sigaction, SigAction, SigNum, SigSet, SockFlag};
-use nix::errno::errno;
+use nix::errno::{Errno, errno};
+use libc::timespec;
 
-use ffi::{pthread_sigmask, sigwait, SIG_BLOCK, SIG_UNBLOCK};
+use ffi::{pthread_sigmask, sigwait, sigtimedwait, SIG_BLOCK, SIG_UNBLOCK};
 
+/// A RAII guard for masking out signals and waiting for them synchronously
 pub struct Trap {
     oldset: SigSet,
     oldsigs: Vec<(SigNum, SigAction)>,
@@ -26,6 +30,8 @@ pub struct Trap {
 extern "C" fn empty_handler(_: SigNum) { }
 
 impl Trap {
+    /// Create and activate the signal trap for specified signals. Signals not
+    /// in list will be delivered asynchronously as always.
     pub fn trap(signals: &[SigNum]) -> Trap {
         unsafe {
             let mut sigset = SigSet::empty();
@@ -47,16 +53,53 @@ impl Trap {
             }
         }
     }
+
+    /// Wait until any of signals arrived or timeout occurs. In case of
+    /// timeout returns None, otherwise returns signal number.
+    ///
+    /// Note the argument here is a deadline, not timeout. It's easier to work
+    /// with deadline if you call wait() function in a loop.
+    pub fn wait(&self, deadline: SteadyTime) -> Option<SigNum> {
+        loop {
+            let timeout = max(deadline - SteadyTime::now(), Duration::zero());
+            let tm = timespec {
+                tv_sec: timeout.num_seconds(),
+                tv_nsec: (timeout - Duration::seconds(timeout.num_seconds()))
+                         .num_nanoseconds().unwrap(),
+            };
+            let sig = unsafe { sigtimedwait(&self.sigset, null_mut(), &tm) };
+            if sig > 0 {
+                return Some(sig);
+            } else {
+                match Errno::last() {
+                    Errno::EAGAIN => {
+                        return None;
+                    }
+                    Errno::EINTR => {
+                        continue;
+                    }
+                    _ => {
+                        panic!("Sigwait error: {}", errno());
+                    }
+                }
+            }
+        }
+    }
 }
 
 impl Iterator for Trap {
     type Item = SigNum;
     fn next(&mut self) -> Option<SigNum> {
         let mut sig: SigNum = 0;
-        if unsafe { sigwait(&self.sigset, &mut sig) } == 0 {
-            return Some(sig);
-        } else {
-            panic!("Sigwait error: {}", errno());
+        loop {
+            if unsafe { sigwait(&self.sigset, &mut sig) } == 0 {
+                return Some(sig);
+            } else {
+                if Errno::last() == Errno::EINTR {
+                    continue;
+                }
+                panic!("Sigwait error: {}", errno());
+            }
         }
     }
 }

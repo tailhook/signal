@@ -2,7 +2,7 @@ use std::ffi::{CString, OsStr};
 use std::os::unix::ffi::OsStrExt;
 
 use nix::sys::signal::{SigSet, SigNum};
-use libc::c_int;
+use libc::{c_int, c_void, timespec};
 
 
 pub trait ToCString {
@@ -29,4 +29,6 @@ extern {
     pub fn pthread_sigmask(how: c_int, set: *const SigSet,
                            oldset: *mut SigSet) -> c_int;
     pub fn sigwait(set: *const SigSet, sig: *mut SigNum) -> c_int;
+    pub fn sigtimedwait(set: *const SigSet, info: *mut c_void,
+        timeout: *const timespec) -> c_int;
 }
