@@ -18,7 +18,7 @@ use nix::sys::signal::{sigaction, SigAction, SigNum, SigSet, SockFlag};
 use nix::errno::{Errno, errno};
 use libc::timespec;
 
-use ffi::{pthread_sigmask, sigwait, sigtimedwait, SIG_BLOCK, SIG_UNBLOCK};
+use ffi::{pthread_sigmask, sigwait, sigtimedwait, SIG_BLOCK, SIG_SETMASK};
 
 /// A RAII guard for masking out signals and waiting for them synchronously
 pub struct Trap {
@@ -110,7 +110,7 @@ impl Drop for Trap {
             for &(sig, ref sigact) in self.oldsigs.iter() {
                 sigaction(sig, sigact).unwrap();
             }
-            pthread_sigmask(SIG_UNBLOCK, &self.oldset, null_mut());
+            pthread_sigmask(SIG_SETMASK, &self.oldset, null_mut());
         }
     }
 }

@@ -25,6 +25,7 @@ impl<T:AsRef<OsStr>> ToCString for T {
 
 pub const SIG_BLOCK: c_int = 0;
 pub const SIG_UNBLOCK: c_int = 1;
+pub const SIG_SETMASK: c_int = 2;
 extern {
     pub fn pthread_sigmask(how: c_int, set: *const SigSet,
                            oldset: *mut SigSet) -> c_int;
