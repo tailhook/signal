@@ -11,6 +11,6 @@ repository = "http://github.com/tailhook/signal"
 documentation = "http://tailhook.github.io/signal/"
 
 [dependencies]
-nix = "0.4.0"
+nix = "0.4.1"
 libc = "0.1.10"
 time = "0.1.32"

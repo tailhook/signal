@@ -15,10 +15,11 @@ use std::ptr::null_mut;
 
 use time::{SteadyTime, Duration};
 use nix::sys::signal::{sigaction, SigAction, SigNum, SigSet, SockFlag};
+use nix::sys::signal::{pthread_sigmask, SIG_BLOCK, SIG_SETMASK};
 use nix::errno::{Errno, errno};
 use libc::timespec;
 
-use ffi::{pthread_sigmask, sigwait, sigtimedwait, SIG_BLOCK, SIG_SETMASK};
+use ffi::{sigwait, sigtimedwait};
 
 /// A RAII guard for masking out signals and waiting for them synchronously
 pub struct Trap {
@@ -40,7 +41,8 @@ impl Trap {
             }
             let mut oldset = uninitialized();
             let mut oldsigs = Vec::new();
-            pthread_sigmask(SIG_BLOCK, &sigset, &mut oldset);
+            pthread_sigmask(SIG_BLOCK, Some(&sigset), Some(&mut oldset))
+                .unwrap();
             for &sig in signals {
                 oldsigs.push((sig, sigaction(sig,
                     &SigAction::new(empty_handler, SockFlag::empty(), sigset))
@@ -67,7 +69,8 @@ impl Trap {
                 tv_nsec: (timeout - Duration::seconds(timeout.num_seconds()))
                          .num_nanoseconds().unwrap(),
             };
-            let sig = unsafe { sigtimedwait(&self.sigset, null_mut(), &tm) };
+            let sig = unsafe { sigtimedwait(self.sigset.as_ref(),
+                                            null_mut(), &tm) };
             if sig > 0 {
                 return Some(sig);
             } else {
@@ -92,7 +95,7 @@ impl Iterator for Trap {
     fn next(&mut self) -> Option<SigNum> {
         let mut sig: SigNum = 0;
         loop {
-            if unsafe { sigwait(&self.sigset, &mut sig) } == 0 {
+            if unsafe { sigwait(self.sigset.as_ref(), &mut sig) } == 0 {
                 return Some(sig);
             } else {
                 if Errno::last() == Errno::EINTR {
@@ -110,7 +113,8 @@ impl Drop for Trap {
             for &(sig, ref sigact) in self.oldsigs.iter() {
                 sigaction(sig, sigact).unwrap();
             }
-            pthread_sigmask(SIG_SETMASK, &self.oldset, null_mut());
+            pthread_sigmask(SIG_SETMASK, Some(&self.oldset), None)
+                .unwrap();
         }
     }
 }

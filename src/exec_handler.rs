@@ -9,15 +9,16 @@
 
 use std::io::Write;
 use std::mem::{forget, transmute};
-use std::ptr::{null, null_mut};
+use std::ptr::{null};
 use std::ffi::CString;
 use std::env::{current_exe, args_os, vars_os};
 
 use nix;
 use libc::{execve, c_char};
 use nix::sys::signal::{sigaction, SigAction, SigNum, SigSet, SockFlag};
+use nix::sys::signal::{pthread_sigmask, SIG_UNBLOCK};
 
-use ffi::{ToCString, pthread_sigmask, SIG_UNBLOCK};
+use ffi::{ToCString};
 
 
 static mut exec_command_line: *const ExecCommandLine =
@@ -125,7 +126,7 @@ pub fn set_handler(signals: &[SigNum], avoid_race_condition: bool)
         }
         // TODO(tailhook) is this error reporting is ok? or maybe just panic?
         if avoid_race_condition && res.is_ok() {
-            pthread_sigmask(SIG_UNBLOCK, &sigset, null_mut());
+            pthread_sigmask(SIG_UNBLOCK, Some(&sigset), None).unwrap();
         }
         res
     }
