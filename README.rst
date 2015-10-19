@@ -2,7 +2,7 @@
 Rust Signal
 ===========
 
-:Status: alpha
+:Status: beta
 :Documentation: http://tailhook.github.io/signal/
 
 A higher-level library for handling unix signals. Currently more focused on

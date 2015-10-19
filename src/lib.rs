@@ -10,7 +10,11 @@
 //! 2. The `Trap` mechanism that masks out signals and allows wait for them
 //!    explicitly
 //!
+//!
 //! Both are specifically suited for making process supervisors.
+//!
+//! Note, masking out signals may also be achieved by trap (just don't call
+//! either `wait()` or `next()`)
 //!
 //! On TODO list:
 //!
