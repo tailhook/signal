@@ -1,0 +1,41 @@
+commands:
+
+  make: !Command
+    description: Build library and binaries
+    container: ubuntu
+    run: [cargo, build]
+
+  test: !Command
+    description: Run tests
+    container: ubuntu
+    run: [cargo, test]
+
+  cargo: !Command
+    description: Run any cargo command
+    container: ubuntu
+    run: [cargo]
+
+  doc: !Command
+    description: Build documentation
+    container: ubuntu
+    epilog: |
+      ---------------------------------------------------------
+      Documentation is built under target/doc/signal/index.html
+    run: [cargo, doc]
+
+containers:
+
+  ubuntu:
+    setup:
+    - !Ubuntu trusty
+    - !UbuntuUniverse
+    - !Install [make, checkinstall, wget, ca-certificates,
+                libssl-dev, build-essential]
+    - !Install [libreadline-dev] # for lua
+
+    - !TarInstall
+      url: "http://static.rust-lang.org/dist/rust-1.3.0-x86_64-unknown-linux-gnu.tar.gz"
+      script: "./install.sh --prefix=/usr --components=rustc,cargo"
+
+    environ:
+      HOME: /work/target
