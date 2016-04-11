@@ -17,7 +17,7 @@ use time::{SteadyTime, Duration};
 use nix::sys::signal::{sigaction, SigAction, SigNum, SigSet, SockFlag};
 use nix::sys::signal::{pthread_sigmask, SIG_BLOCK, SIG_SETMASK};
 use nix::errno::{Errno, errno};
-use libc::timespec;
+use libc::{self, timespec};
 
 use ffi::{sigwait, sigtimedwait};
 
@@ -65,9 +65,9 @@ impl Trap {
         loop {
             let timeout = max(deadline - SteadyTime::now(), Duration::zero());
             let tm = timespec {
-                tv_sec: timeout.num_seconds(),
+                tv_sec: timeout.num_seconds() as libc::time_t,
                 tv_nsec: (timeout - Duration::seconds(timeout.num_seconds()))
-                         .num_nanoseconds().unwrap(),
+                         .num_nanoseconds().unwrap() as libc::c_long,
             };
             let sig = unsafe { sigtimedwait(self.sigset.as_ref(),
                                             null_mut(), &tm) };
