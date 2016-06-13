@@ -10,10 +10,9 @@
 //! Especially useful for running (multiple) child processes simultaneously.
 
 use std::mem::uninitialized;
-use std::cmp::max;
 use std::ptr::null_mut;
 
-use time::{SteadyTime, Duration};
+use std::time::{Instant, Duration};
 use nix::sys::signal::{sigaction, SigAction, SigNum, SigSet, SockFlag};
 use nix::sys::signal::{pthread_sigmask, SIG_BLOCK, SIG_SETMASK};
 use nix::errno::{Errno, errno};
@@ -61,13 +60,18 @@ impl Trap {
     ///
     /// Note the argument here is a deadline, not timeout. It's easier to work
     /// with deadline if you call wait() function in a loop.
-    pub fn wait(&self, deadline: SteadyTime) -> Option<SigNum> {
+    pub fn wait(&self, deadline: Instant) -> Option<SigNum> {
         loop {
-            let timeout = max(deadline - SteadyTime::now(), Duration::zero());
+            let now = Instant::now();
+            let timeout = if deadline > now {
+                deadline.duration_since(now)
+            } else {
+                Duration::from_secs(0)
+            };
             let tm = timespec {
-                tv_sec: timeout.num_seconds() as libc::time_t,
-                tv_nsec: (timeout - Duration::seconds(timeout.num_seconds()))
-                         .num_nanoseconds().unwrap() as libc::c_long,
+                tv_sec: timeout.as_secs() as libc::time_t,
+                tv_nsec: (timeout - Duration::from_secs(timeout.as_secs()))
+                         .subsec_nanos() as libc::c_long,
             };
             let sig = unsafe { sigtimedwait(self.sigset.as_ref(),
                                             null_mut(), &tm) };
