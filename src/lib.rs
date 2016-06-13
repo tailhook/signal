@@ -25,7 +25,6 @@
 
 extern crate libc;
 extern crate nix;
-extern crate time;
 
 mod ffi;
 pub mod exec_handler;
