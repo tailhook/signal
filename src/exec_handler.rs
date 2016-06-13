@@ -15,8 +15,8 @@ use std::env::{current_exe, args_os, vars_os};
 
 use nix;
 use libc::{execve, c_char};
-use nix::sys::signal::{sigaction, SigAction, SigNum, SigSet, SockFlag};
-use nix::sys::signal::{pthread_sigmask, SIG_UNBLOCK};
+use nix::sys::signal::{sigaction, SigAction, SigNum, SigSet, SaFlags};
+use nix::sys::signal::{pthread_sigmask, SIG_UNBLOCK, SigHandler};
 
 use ffi::{ToCString};
 
@@ -119,8 +119,9 @@ pub fn set_handler(signals: &[SigNum], avoid_race_condition: bool)
         let mut res = Ok(());
         for &sig in signals {
             res = res.and_then(|()| {
-                try!(sigaction(sig, &SigAction::new(exec_handler,
-                    SockFlag::empty(), sigset)));
+                try!(sigaction(sig, &SigAction::new(
+                    SigHandler::Handler(exec_handler),
+                    SaFlags::empty(), sigset)));
                 Ok(())
             });
         }

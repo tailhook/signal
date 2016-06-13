@@ -1,8 +1,8 @@
 use std::ffi::{CString, OsStr};
 use std::os::unix::ffi::OsStrExt;
 
-use nix::sys::signal::{sigset_t, SigNum};
-use libc::{c_int, c_void, timespec};
+use nix::sys::signal::{SigNum};
+use libc::{c_int, c_void, timespec, sigset_t};
 
 
 pub trait ToCString {

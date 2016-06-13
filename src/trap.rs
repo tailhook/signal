@@ -13,8 +13,8 @@ use std::mem::uninitialized;
 use std::ptr::null_mut;
 
 use std::time::{Instant, Duration};
-use nix::sys::signal::{sigaction, SigAction, SigNum, SigSet, SockFlag};
-use nix::sys::signal::{pthread_sigmask, SIG_BLOCK, SIG_SETMASK};
+use nix::sys::signal::{sigaction, SigAction, SigNum, SigSet, SaFlags};
+use nix::sys::signal::{pthread_sigmask, SIG_BLOCK, SIG_SETMASK, SigHandler};
 use nix::errno::{Errno, errno};
 use libc::{self, timespec};
 
@@ -44,7 +44,8 @@ impl Trap {
                 .unwrap();
             for &sig in signals {
                 oldsigs.push((sig, sigaction(sig,
-                    &SigAction::new(empty_handler, SockFlag::empty(), sigset))
+                    &SigAction::new(SigHandler::Handler(empty_handler),
+                        SaFlags::empty(), sigset))
                     .unwrap()));
             }
             Trap {
