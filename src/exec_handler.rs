@@ -15,8 +15,9 @@ use std::env::{current_exe, args_os, vars_os};
 
 use nix;
 use libc::{execve, c_char};
+use libc::{getpid, pid_t};
 use nix::sys::signal::{sigaction, SigAction, SigNum, SigSet, SaFlags};
-use nix::sys::signal::{pthread_sigmask, SIG_UNBLOCK, SigHandler};
+use nix::sys::signal::{pthread_sigmask, SIG_UNBLOCK, SigHandler, raise};
 
 use ffi::{ToCString};
 
@@ -32,6 +33,7 @@ struct ExecCommandLine {
     c_args: Vec<*const c_char>,
     env: Vec<CString>,
     c_env: Vec<*const c_char>,
+    pid: pid_t,
 }
 
 
@@ -41,6 +43,10 @@ struct ExecCommandLine {
 ///
 /// You may change it freely even after calling set_handler. But only single
 /// command-line may be set for all signal handlers used in this module.
+///
+/// Since version v0.3.0 command-line is executed only if pid of a process
+/// matches original pid where set_handler was called. I.e. you need to
+/// set_handler again for forked process if that is desired.
 pub fn set_command_line<P, Ai, A, Ek, Ev, E>(program: P, args: A, environ: E)
     where P: ToCString,
           Ai: ToCString,
@@ -71,6 +77,7 @@ pub fn set_command_line<P, Ai, A, Ek, Ev, E>(program: P, args: A, environ: E)
             c_args: c_args,
             env: env,
             c_env: c_env,
+            pid: getpid(),
         });
 
         exec_command_line = &*new;
@@ -79,12 +86,15 @@ pub fn set_command_line<P, Ai, A, Ek, Ev, E>(program: P, args: A, environ: E)
 }
 
 extern "C" fn exec_handler(sig: SigNum) {
-    let err = unsafe {
-        execve((*exec_command_line).program.as_ptr(),
-               (*exec_command_line).c_args.as_ptr(),
-               (*exec_command_line).c_env.as_ptr())
-    };
-    panic!("Couldn't exec on signal {}, err code {}", sig, err);
+    unsafe {
+        if getpid() != (*exec_command_line).pid {
+            raise(sig).expect("reraising signal");
+        }
+        let err = execve((*exec_command_line).program.as_ptr(),
+                   (*exec_command_line).c_args.as_ptr(),
+                   (*exec_command_line).c_env.as_ptr());
+        panic!("Couldn't exec on signal {}, err code {}", sig, err);
+    }
 }
 
 
@@ -103,6 +113,10 @@ extern "C" fn exec_handler(sig: SigNum) {
 /// For `avoid_race_condition=true` is also important to use single call for
 /// `set_handler` for all signals, because it avoids race condition between
 /// all combinations of subsequent signals in the set.
+///
+/// Since version v0.3.0 command-line is executed only if pid of a process
+/// matches original pid where set_handler was called. I.e. you need to
+/// set_handler again for forked process if that is desired.
 pub fn set_handler(signals: &[SigNum], avoid_race_condition: bool)
     -> nix::Result<()>
 {
