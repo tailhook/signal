@@ -14,8 +14,7 @@ use std::ffi::CString;
 use std::env::{current_exe, args_os, vars_os};
 
 use nix;
-use libc::{execve, c_char};
-use libc::{getpid, pid_t};
+use libc::{execve, c_char, pid_t, syscall};
 use nix::sys::signal::{sigaction, SigAction, SigNum, SigSet, SaFlags};
 use nix::sys::signal::{pthread_sigmask, SIG_UNBLOCK, SigHandler, raise};
 
@@ -24,6 +23,9 @@ use ffi::{ToCString};
 
 static mut exec_command_line: *const ExecCommandLine =
     0usize as *const ExecCommandLine;
+
+#[allow(non_upper_case_globals)]
+static SYS_getpid: i64 = 20;
 
 
 #[allow(unused)]
@@ -36,6 +38,12 @@ struct ExecCommandLine {
     pid: pid_t,
 }
 
+/// Use syscall for getpid because glibc's getpid() is wrong after clone()
+/// and there is no SYS_getpid in libc crate. We aren't going to receive
+/// a signal in a different thread anyway
+fn getpid() -> pid_t {
+    unsafe { syscall(SYS_getpid) as pid_t }
+}
 
 /// Sets command-line and environment to execute when signal happens
 ///
