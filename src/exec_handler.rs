@@ -25,7 +25,12 @@ static mut exec_command_line: *const ExecCommandLine =
     0usize as *const ExecCommandLine;
 
 #[allow(non_upper_case_globals)]
+#[cfg(all(target_os="linux", target_arch="x86"))]
 static SYS_getpid: i64 = 20;
+
+#[allow(non_upper_case_globals)]
+#[cfg(all(target_os="linux", target_arch="x86_64"))]
+static SYS_getpid: i64 = 39;
 
 
 #[allow(unused)]
@@ -96,12 +101,13 @@ pub fn set_command_line<P, Ai, A, Ek, Ev, E>(program: P, args: A, environ: E)
 extern "C" fn exec_handler(sig: SigNum) {
     unsafe {
         if getpid() != (*exec_command_line).pid {
-            raise(sig).expect("reraising signal");
+            panic!("Early signal {:?} after fork", sig);
+        } else {
+            let err = execve((*exec_command_line).program.as_ptr(),
+                       (*exec_command_line).c_args.as_ptr(),
+                       (*exec_command_line).c_env.as_ptr());
+            panic!("Couldn't exec on signal {}, err code {}", sig, err);
         }
-        let err = execve((*exec_command_line).program.as_ptr(),
-                   (*exec_command_line).c_args.as_ptr(),
-                   (*exec_command_line).c_env.as_ptr());
-        panic!("Couldn't exec on signal {}, err code {}", sig, err);
     }
 }
 
