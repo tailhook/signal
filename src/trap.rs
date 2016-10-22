@@ -21,11 +21,11 @@ use libc::{self, timespec};
 use ffi::{sigwait, sigtimedwait};
 
 /// A RAII guard for masking out signals and waiting for them synchronously
-//!
-//! Trap temporarily replaces signal handlers to an empty handler, effectively
-//! activating singnals that are ignored by default.
-//!
-//! Old signal handlers are restored in `Drop` handler.
+///
+/// Trap temporarily replaces signal handlers to an empty handler, effectively
+/// activating singnals that are ignored by default.
+///
+/// Old signal handlers are restored in `Drop` handler.
 pub struct Trap {
     oldset: SigSet,
     oldsigs: Vec<(SigNum, SigAction)>,
@@ -102,6 +102,8 @@ impl Trap {
         }
     }
 }
+
+unsafe impl Send for Trap {}
 
 impl Iterator for Trap {
     type Item = SigNum;
