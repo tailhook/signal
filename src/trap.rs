@@ -103,6 +103,8 @@ impl Trap {
     }
 }
 
+unsafe impl Send for Trap {}
+
 impl Iterator for Trap {
     type Item = SigNum;
     fn next(&mut self) -> Option<SigNum> {
