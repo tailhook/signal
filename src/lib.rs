@@ -22,6 +22,7 @@
 //!
 //! The library tested only on linux
 //!
+#![warn(missing_docs)]
 
 extern crate libc;
 extern crate nix;
@@ -29,3 +30,6 @@ extern crate nix;
 mod ffi;
 pub mod exec_handler;
 pub mod trap;
+
+/// Signal number (reexported from nix)
+pub use nix::sys::signal::Signal;
