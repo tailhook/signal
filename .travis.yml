@@ -15,3 +15,11 @@ after_success: |
   pip install ghp-import --user &&
   ~/.local/bin/ghp-import -n target/doc &&
   git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
+
+publish:
+  script: |
+    cargo publish --token=$CARGO_TOKEN
+  env:
+  - secure: "qyDQIk43cmSgZOtl4Po7DnjIvKOv61my2XAUQk3aXVBgyMqVNA2EyT2wK5Iu+ibkKgdwFiBZWCIfDKTWk9hNWBXR6GryKqlgZd8ey6FXBl4kNmiewwkhQIZwBTxiCDHeZPw/XGbTuCMYIn7j4HqvHWFgPfjwT9ivVquOhIdg6zCxt4I6Uu+kaSaBFeK+GXzVi+sUvgso7A0pS+i/JsCYW+o2moBGebStys+s4wd2AIMT2GDC1YVms4mmIKB4DN4qwGmtxHv/5ftoDN8uAvUhi+AOqDVbsyMi6Dl6d6ln8H91uCADSV2A/c0L3wAX0ajswyg6idwXjWxHVlki5EyuZdUf3tjuKo0qgiThKCYt3TbJSgiJ0P/G11JdCLURRe6UGYcatpjJe2omXQBkuF0oSb6lufxvQrOFr+jIrDZBmBEni8/u3eFatBAMOn4f42dtJsC7mK9UUijy+CsgMMkRJWDEU+jS+gXWvUOyTbcxE+pISlDvqrPChMCiW+sp+SjCsVZ53WOAcE7BYrRiP/t9Tac+SllJSCbkT6069IJuA2zzrUFHYsPmj7c9nlrG42Y0b7FCmLUYiCAROHDIqDFToJ86D/oFz2423S6+davre5GNwmLmvgaZ6UuEXNwHovDQnBvJIuQiewuU5njmN+3YxphE6qMiUri31uvjHbkPsCs="
+  on:
+    tags: true
