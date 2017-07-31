@@ -14,9 +14,9 @@ use std::ffi::CString;
 use std::env::{current_exe, args_os, vars_os};
 
 use nix;
-use libc::{execve, c_char, pid_t, getpid};
-use nix::sys::signal::{sigaction, SigAction, SigNum, SigSet, SaFlags};
-use nix::sys::signal::{pthread_sigmask, SIG_UNBLOCK, SigHandler};
+use libc::{execve, c_char, pid_t, getpid, c_int};
+use nix::sys::signal::{sigaction, SigAction, Signal, SigSet, SaFlags};
+use nix::sys::signal::{pthread_sigmask, SigmaskHow, SigHandler};
 
 use ffi::{ToCString};
 
@@ -82,7 +82,7 @@ pub fn set_command_line<P, Ai, A, Ek, Ev, E>(program: P, args: A, environ: E)
     }
 }
 
-extern "C" fn exec_handler(sig: SigNum) {
+extern "C" fn exec_handler(sig:c_int) {
     unsafe {
         if getpid() != (*exec_command_line).pid {
             panic!("Early signal {:?} after fork", sig);
@@ -115,7 +115,7 @@ extern "C" fn exec_handler(sig: SigNum) {
 /// Since version v0.3.0 command-line is executed only if pid of a process
 /// matches original pid where set_handler was called. I.e. you need to
 /// set_handler again for forked process if that is desired.
-pub fn set_handler(signals: &[SigNum], avoid_race_condition: bool)
+pub fn set_handler(signals: &[Signal], avoid_race_condition: bool)
     -> nix::Result<()>
 {
     unsafe {
@@ -125,7 +125,7 @@ pub fn set_handler(signals: &[SigNum], avoid_race_condition: bool)
         let mut sigset = SigSet::empty();
         if avoid_race_condition {
             for &sig in signals {
-                sigset.add(sig).unwrap();
+                sigset.add(sig);
             }
         }
         let mut res = Ok(());
@@ -139,7 +139,7 @@ pub fn set_handler(signals: &[SigNum], avoid_race_condition: bool)
         }
         // TODO(tailhook) is this error reporting is ok? or maybe just panic?
         if avoid_race_condition && res.is_ok() {
-            pthread_sigmask(SIG_UNBLOCK, Some(&sigset), None).unwrap();
+            pthread_sigmask(SigmaskHow::SIG_UNBLOCK, Some(&sigset), None).unwrap();
         }
         res
     }
