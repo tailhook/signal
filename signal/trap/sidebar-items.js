@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Trap","A RAII guard for masking out signals and waiting for them synchronously"]]});
