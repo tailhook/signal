@@ -3,7 +3,7 @@ name = "signal"
 description = """
     The higher-level abstractions around unix signals
 """
-version = "0.3.2"
+version = "0.4.0"
 license = "MIT"
 authors = ["Paul Colomiets <paul@colomiets.name>"]
 homepage = "http://github.com/tailhook/signal"
