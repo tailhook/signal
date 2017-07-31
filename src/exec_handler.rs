@@ -21,7 +21,7 @@ use nix::sys::signal::{pthread_sigmask, SigmaskHow, SigHandler};
 use ffi::{ToCString};
 
 
-static mut exec_command_line: *const ExecCommandLine =
+static mut EXEC_COMMAND_LINE: *const ExecCommandLine =
     0usize as *const ExecCommandLine;
 
 #[allow(unused)]
@@ -65,8 +65,8 @@ pub fn set_command_line<P, Ai, A, Ek, Ev, E>(program: P, args: A, environ: E)
     let mut c_env = env.iter().map(|x| x.as_ptr()).collect::<Vec<_>>();
     c_env.push(null());
     unsafe {
-        if exec_command_line != null() {
-            transmute::<_, Box<ExecCommandLine>>(exec_command_line);
+        if EXEC_COMMAND_LINE != null() {
+            transmute::<_, Box<ExecCommandLine>>(EXEC_COMMAND_LINE);
         }
         let new = Box::new(ExecCommandLine {
             program: program.to_cstring(),
@@ -77,19 +77,19 @@ pub fn set_command_line<P, Ai, A, Ek, Ev, E>(program: P, args: A, environ: E)
             pid: getpid(),
         });
 
-        exec_command_line = &*new;
+        EXEC_COMMAND_LINE = &*new;
         forget(new);
     }
 }
 
 extern "C" fn exec_handler(sig:c_int) {
     unsafe {
-        if getpid() != (*exec_command_line).pid {
+        if getpid() != (*EXEC_COMMAND_LINE).pid {
             panic!("Early signal {:?} after fork", sig);
         } else {
-            let err = execve((*exec_command_line).program.as_ptr(),
-                       (*exec_command_line).c_args.as_ptr(),
-                       (*exec_command_line).c_env.as_ptr());
+            let err = execve((*EXEC_COMMAND_LINE).program.as_ptr(),
+                       (*EXEC_COMMAND_LINE).c_args.as_ptr(),
+                       (*EXEC_COMMAND_LINE).c_env.as_ptr());
             panic!("Couldn't exec on signal {}, err code {}", sig, err);
         }
     }
@@ -119,7 +119,7 @@ pub fn set_handler(signals: &[Signal], avoid_race_condition: bool)
     -> nix::Result<()>
 {
     unsafe {
-        if exec_command_line == null() {
+        if EXEC_COMMAND_LINE == null() {
             set_command_line(current_exe().unwrap(), args_os(), vars_os());
         }
         let mut sigset = SigSet::empty();

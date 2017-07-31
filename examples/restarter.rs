@@ -1,7 +1,8 @@
 extern crate signal;
 extern crate nix;
 
-use std::thread::sleep_ms;
+use std::time::Duration;
+use std::thread::sleep;
 use std::str::FromStr;
 use std::env::{args, vars_os, current_exe};
 
@@ -18,5 +19,5 @@ fn main() {
         &["restarter".to_string(), (num+1).to_string()],
         vars_os());
     signal::exec_handler::set_handler(&[SIGQUIT], true).unwrap();
-    sleep_ms(10000000);
+    sleep(Duration::new(10000, 0));
 }
