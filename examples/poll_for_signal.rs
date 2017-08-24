@@ -9,6 +9,7 @@ use nix::sys::signal::{SIGINT};
 use signal::trap::Trap;
 
 
+#[cfg(target_os="linux")]
 fn main() {
     let trap = Trap::trap(&[SIGINT]);
     loop {
@@ -18,4 +19,9 @@ fn main() {
         }
         sleep(Duration::from_millis(100));
     }
+}
+
+#[cfg(not(target_os="linux"))]
+fn main() {
+    println!("unfortunately this example works only for linux");
 }
