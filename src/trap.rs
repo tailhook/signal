@@ -16,7 +16,7 @@ use std::time::{Instant, Duration};
 use nix::sys::signal::{sigaction, SigAction, Signal, SigSet, SaFlags};
 use nix::sys::signal::{pthread_sigmask, SigmaskHow, SigHandler};
 use nix::errno::{Errno, errno};
-use libc::{self, timespec, sigwait, sigtimedwait};
+use libc::{self, timespec, sigwait};
 
 /// A RAII guard for masking out signals and waiting for them synchronously
 ///
@@ -67,7 +67,10 @@ impl Trap {
     ///
     /// Note the argument here is a deadline, not timeout. It's easier to work
     /// with deadline if you call wait() function in a loop.
+    #[cfg(target_os = "linux")]
     pub fn wait(&self, deadline: Instant) -> Option<Signal> {
+        use libc::sigtimedwait;
+
         loop {
             let now = Instant::now();
             let timeout = if deadline > now {
