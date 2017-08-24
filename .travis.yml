@@ -1,20 +1,17 @@
 language: rust
-rust:
-- stable
-- beta
-- nightly
+matrix:
+  include:
+  - rust: stable
+    os: linux
+  - rust: beta
+    os: linux
+  - rust: nightly
+    os: linux
+  - rust: stable
+    os: osx
 sudo: false
 env:
   secure: "XgtN+JshVFncTNoPJ44n8yHcLEIHv7sSKTcXYPM1DeKm2cRCUC1lxNvyiBH6CenEdushrg1vfUne8JeAvB/nE3NI9BG7Cr3ZoA+Zxbb8f4vJZH9H+FJA2nFgMATad2EqMaH+WH6sxDv3IQNCl267sdA/e+XeQ3YFbQds5xQnCfsXAQRf+zy+lVfgL2AM+6/ciXmePhqTa/WVaoBSXru/L02b6UOGiexYpzx8dUN4Hcf4fbdUv22NnE0TPD2PLG3kvcIbJn+PXxhPvYK1lQwX1DhW7P2tQkx336pWpfKZdRnvAgW0CHh9bpdjTCz2OMJhNfrddaUr84t0jeytulhXf7a32bYcgx5Vn3IzUNFtpjGQ/Xcq6Ge346+Euduo/rw/Tl52DhGVQkWJ4jJisYq2FW8MOLLTdZtbf/9JkwYCp+S9egLk1FivpHCSE+ewLRcvNwjcw/+NQQQNJ8iFQJ5gD6BpABK8KdhtMsdaxAv1IRtSJoaEUmS6AekBnWJvWpUlgtAm0JLBzeScQFFo6SFyyR4Wukuw1bT0nvuv0D/arvZzcmYK0I3FBrMtpuWJQJVmVI3GP5D4ORw3I14q/M6ocrgo5N6k3XlBqtTFNn/1Ou7HiDIqfEPOL55Bh7kbmSqFAli3aMESoa63gJG+vRgHHDKE7yZ/1U878WL0XFqigvs="
-after_success: |
-  [ $TRAVIS_RUST_VERSION = stable ] &&
-  [ $TRAVIS_BRANCH = master ] &&
-  [ $TRAVIS_PULL_REQUEST = false ] &&
-  cargo doc &&
-  echo "<meta http-equiv=refresh content=0;url=`echo $TRAVIS_REPO_SLUG | cut -d '/' -f 2`/index.html>" > target/doc/index.html &&
-  pip install ghp-import --user &&
-  ~/.local/bin/ghp-import -n target/doc &&
-  git push -fq https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
 
 publish:
   script: |
@@ -22,4 +19,6 @@ publish:
   env:
   - secure: "qyDQIk43cmSgZOtl4Po7DnjIvKOv61my2XAUQk3aXVBgyMqVNA2EyT2wK5Iu+ibkKgdwFiBZWCIfDKTWk9hNWBXR6GryKqlgZd8ey6FXBl4kNmiewwkhQIZwBTxiCDHeZPw/XGbTuCMYIn7j4HqvHWFgPfjwT9ivVquOhIdg6zCxt4I6Uu+kaSaBFeK+GXzVi+sUvgso7A0pS+i/JsCYW+o2moBGebStys+s4wd2AIMT2GDC1YVms4mmIKB4DN4qwGmtxHv/5ftoDN8uAvUhi+AOqDVbsyMi6Dl6d6ln8H91uCADSV2A/c0L3wAX0ajswyg6idwXjWxHVlki5EyuZdUf3tjuKo0qgiThKCYt3TbJSgiJ0P/G11JdCLURRe6UGYcatpjJe2omXQBkuF0oSb6lufxvQrOFr+jIrDZBmBEni8/u3eFatBAMOn4f42dtJsC7mK9UUijy+CsgMMkRJWDEU+jS+gXWvUOyTbcxE+pISlDvqrPChMCiW+sp+SjCsVZ53WOAcE7BYrRiP/t9Tac+SllJSCbkT6069IJuA2zzrUFHYsPmj7c9nlrG42Y0b7FCmLUYiCAROHDIqDFToJ86D/oFz2423S6+davre5GNwmLmvgaZ6UuEXNwHovDQnBvJIuQiewuU5njmN+3YxphE6qMiUri31uvjHbkPsCs="
   on:
+    rust: stable
+    os: linux
     tags: true

@@ -6,9 +6,9 @@ description = """
 version = "0.4.0"
 license = "MIT"
 authors = ["Paul Colomiets <paul@colomiets.name>"]
-homepage = "http://github.com/tailhook/signal"
-repository = "http://github.com/tailhook/signal"
-documentation = "http://tailhook.github.io/signal/"
+homepage = "https://github.com/tailhook/signal"
+repository = "https://github.com/tailhook/signal"
+documentation = "https://docs.rs/signal"
 
 [dependencies]
 nix = "0.9.0"
