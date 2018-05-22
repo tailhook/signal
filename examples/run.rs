@@ -7,7 +7,7 @@ use std::process::Command;
 use nix::Error;
 use nix::errno::Errno;
 use nix::sys::signal::{SIGTERM, SIGINT, SIGCHLD};
-use nix::sys::wait::{waitpid, WNOHANG};
+use nix::sys::wait::{waitpid, WaitPidFlag};
 use nix::sys::wait::WaitStatus::{Exited, Signaled, StillAlive};
 use nix::libc::{c_int};
 
@@ -30,7 +30,7 @@ fn main() {
                 // Current std::process::Command ip does not have a way to find
                 // process id, so we just wait until we have no children
                 loop {
-                    match waitpid(None, Some(WNOHANG)) {
+                    match waitpid(None, Some(WaitPidFlag::WNOHANG)) {
                         Ok(Exited(pid, status)) => {
                             println!("{} exited with status {}", pid, status);
                             continue;
