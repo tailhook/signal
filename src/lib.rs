@@ -1,4 +1,9 @@
 //! Signal handling library
+//! =======================
+//!
+//! [Docs](https://docs.rs/signal/) |
+//! [Github](https://github.com/tailhook/signal/) |
+//! [Crate](https://crates.io/crates/signal)
 //!
 //! The library is focused on higher-level abstractions for handling signals.
 //! All low-level stuff should be in `nix`.
