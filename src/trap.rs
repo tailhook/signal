@@ -9,6 +9,7 @@
 //!
 //! Especially useful for running (multiple) child processes simultaneously.
 
+use std::fmt;
 use std::mem::uninitialized;
 use std::ptr::null_mut;
 
@@ -130,5 +131,12 @@ impl Drop for Trap {
             pthread_sigmask(SigmaskHow::SIG_SETMASK, Some(&self.oldset), None)
                 .unwrap();
         }
+    }
+}
+
+impl fmt::Debug for Trap {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("Trap")
+        .finish()
     }
 }

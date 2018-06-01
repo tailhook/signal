@@ -28,6 +28,7 @@
 //! The library tested only on linux
 //!
 #![warn(missing_docs)]
+#![warn(missing_debug_implementations)]
 
 extern crate libc;
 extern crate nix;
